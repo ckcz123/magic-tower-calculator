@@ -44,6 +44,7 @@ namespace calculator
                 }
                 List<int> list = new List<int>(set);
                 list.Sort();
+                if (list.Count > 20) list = list.GetRange(0, 20);
                 return string.Join(",", list);
             }
         }
@@ -189,9 +190,9 @@ namespace calculator
                 text += cnt + "\n";
                 foreach (Control control in panel_all.Controls)
                 {
-                    text += control.Controls.Find("monster_hp", true)[0].Text + "\n" +
-                            control.Controls.Find("monster_atk", true)[0].Text
-                            + "\n" + control.Controls.Find("monster_def", true)[0].Text + "\n" +
+                    text += control.Controls.Find("monster_hp", true)[0].Text + " " +
+                            control.Controls.Find("monster_atk", true)[0].Text + " " +
+                            control.Controls.Find("monster_def", true)[0].Text + " " +
                             ((ComboBox) control.Controls.Find("monster_special", true)[0]).SelectedIndex + "\n";
                 }
                 File.WriteAllText(dialog.FileName, text);
@@ -218,12 +219,14 @@ namespace calculator
                 while (panel_all.Controls.Count<cnt) button_add_item_Click();
                 for (int i = 0; i < cnt; i++)
                 {
+                    string[] strings = text[3 + i].Split(" ".ToCharArray());
                     Control control = panel_all.Controls[i];
-                    Controls.Find("monster_hp", true)[0].Text = text[3 + 4 * i];
-                    Controls.Find("monster_atk", true)[0].Text = text[4 + 4 * i];
-                    Controls.Find("monster_def", true)[0].Text = text[5 + 4 * i];
-                    ((ComboBox)control.Controls.Find("monster_special", true)[0]).SelectedIndex = Convert.ToInt32(text[6 + 4 * i]);
+                    Controls.Find("monster_hp", true)[0].Text = strings[0];
+                    Controls.Find("monster_atk", true)[0].Text = strings[1];
+                    Controls.Find("monster_def", true)[0].Text = strings[2];
+                    ((ComboBox)control.Controls.Find("monster_special", true)[0]).SelectedIndex = Convert.ToInt32(strings[3]);
                 }
+                calculate();
             }
         }
 
