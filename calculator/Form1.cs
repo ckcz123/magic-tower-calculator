@@ -161,7 +161,6 @@ namespace calculator
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
-            CenterToScreen();
             Pen pen=new Pen(Color.Black);
             pen.DashStyle = DashStyle.Solid;
             Graphics graphics = CreateGraphics();
