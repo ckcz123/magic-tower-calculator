@@ -220,9 +220,9 @@ namespace calculator
                 {
                     string[] strings = text[3 + i].Split(" ".ToCharArray());
                     Control control = panel_all.Controls[i];
-                    Controls.Find("monster_hp", true)[0].Text = strings[0];
-                    Controls.Find("monster_atk", true)[0].Text = strings[1];
-                    Controls.Find("monster_def", true)[0].Text = strings[2];
+                    control.Controls.Find("monster_hp", true)[0].Text = strings[0];
+                    control.Controls.Find("monster_atk", true)[0].Text = strings[1];
+                    control.Controls.Find("monster_def", true)[0].Text = strings[2];
                     ((ComboBox)control.Controls.Find("monster_special", true)[0]).SelectedIndex = Convert.ToInt32(strings[3]);
                 }
                 calculate();
