@@ -22,29 +22,28 @@ namespace calculator
             {
                 hp = _hp; atk = _atk; def = _def; special = _special;
             }
-            public string getDamage(int hero_atk, int hero_def)
+            public int getDamage(int hero_atk, int hero_def)
             {
                 // 魔攻
                 if (special == 2) hero_def = 0;
                 if (special == 3 && def < hero_atk - 1) def = hero_atk - 1;
-                if (hero_atk <= def) return "不可战斗";
-                if (hero_def >= atk) return "0";
+                if (hero_atk <= def) return 999999999;
+                if (hero_def >= atk) return 0;
                 int damage = special == 1 ? atk - hero_def : 0;
-                return Convert.ToString(damage + (hp - 1) / (hero_atk - def) * (atk - hero_def));
+                return damage + (hp - 1) / (hero_atk - def) * (atk - hero_def);
             }
             public string getCritical(int hero_atk)
             {
-                if (special == 3) return "无临界";
-                HashSet<int> set = new HashSet<int>();
-                for (int i = 1; i <= hp; i++)
+                if (special == 3 || hero_atk <= 0) return "无临界";
+                int last = getDamage(hero_atk - 1, 0);
+                List<int> list = new List<int>();
+                for (int i = hero_atk; i <= hp+def; i++)
                 {
-                    int atk = (hp - 1) / i + 1 + def;
-                    if (atk < hero_atk) break;
-                    set.Add(atk);
+                    int damage = getDamage(i, 0);
+                    if (damage < last)
+                        list.Add(i);
+                    last = damage;
                 }
-                List<int> list = new List<int>(set);
-                list.Sort();
-                if (list.Count > 20) list = list.GetRange(0, 20);
                 return string.Join(",", list);
             }
         }
@@ -86,7 +85,8 @@ namespace calculator
                     Convert.ToInt32(control.Controls.Find("monster_def", true)[0].Text),
                     ((ComboBox)control.Controls.Find("monster_special", true)[0]).SelectedIndex
                 );
-                control.Controls.Find("monster_damage", true)[0].Text = monster.getDamage(hero_atk, hero_def);
+                int damage = monster.getDamage(hero_atk, hero_def);
+                control.Controls.Find("monster_damage", true)[0].Text = damage==999999999?"不可战斗":Convert.ToString(damage);
                 control.Controls.Find("monster_critical", true)[0].Text = monster.getCritical(hero_atk);
             }
             catch (Exception)
@@ -95,67 +95,117 @@ namespace calculator
 
         }
 
+        private void remove(object sender, EventArgs args)
+        {
+            if (panel_all.Controls.Count == 1) return;
+            try
+            {
+                Control parent = ((Control)sender).Parent;
+                int index = panel_all.Controls.IndexOf(parent);
+                if (index == -1) return;
+                remove(index);
+            }
+            catch (Exception) { }
+        }
+
+        private void remove(int index)
+        {
+            try
+            {
+                Control control = panel_all.Controls[index];
+                panel_all.Controls.RemoveAt(index);
+                control.Dispose();
+                for (int i = index; i < panel_all.Controls.Count; i++)
+                {
+                    Point location = panel_all.Controls[i].Location;
+                    location.Y -= 30;
+                    panel_all.Controls[i].Location = location;
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
         private void button_add_item_Click(object sender=null, EventArgs e=null)
         {
             int cnt = panel_all.Controls.Count;
 
             Panel panel = new Panel();
-            panel.Size = new System.Drawing.Size(630, 37);
+            panel.Size = new System.Drawing.Size(700, 37);
             panel.Location = new System.Drawing.Point(2,30*cnt-5);
 
+            TextBox tb_name = new TextBox();
+            tb_name.Location = new System.Drawing.Point(8, 8);
+            tb_name.Size = new System.Drawing.Size(72, 20);
+            tb_name.Text = "怪物"+(cnt+1);
+            tb_name.Name = "monster_name";
+            tb_name.TabIndex = 5 * cnt + 4;
+            panel.Controls.Add(tb_name);
+
             TextBox tb_hp = new TextBox();
-            tb_hp.Location = new System.Drawing.Point(10, 8);
-            tb_hp.Size = new System.Drawing.Size(63, 20);
+            tb_hp.Location = new System.Drawing.Point(90, 8);
+            tb_hp.Size = new System.Drawing.Size(53, 20);
             tb_hp.Text = "1000";
             tb_hp.TextChanged += calculate;
             tb_hp.Name = "monster_hp";
-            tb_hp.TabIndex = 4 * cnt + 4;
+            tb_hp.TabIndex = 5 * cnt + 5;
             panel.Controls.Add(tb_hp);
 
             TextBox tb_atk = new TextBox();
-            tb_atk.Location = new System.Drawing.Point(91, 8);
-            tb_atk.Size = new System.Drawing.Size(43, 20);
+            tb_atk.Location = new System.Drawing.Point(152, 8);
+            tb_atk.Size = new System.Drawing.Size(40, 20);
             tb_atk.Text = "10";
             tb_atk.TextChanged += calculate;
             tb_atk.Name = "monster_atk";
-            tb_atk.TabIndex = 4 * cnt + 5;
+            tb_atk.TabIndex = 5 * cnt + 6;
             panel.Controls.Add(tb_atk);
 
             TextBox tb_def = new TextBox();
-            tb_def.Location = new System.Drawing.Point(154, 8);
-            tb_def.Size = new System.Drawing.Size(43, 20);
+            tb_def.Location = new System.Drawing.Point(202, 8);
+            tb_def.Size = new System.Drawing.Size(40, 20);
             tb_def.Text = "10";
             tb_def.TextChanged += calculate;
             tb_def.Name = "monster_def";
-            tb_def.TabIndex = 4 * cnt + 6;
+            tb_def.TabIndex = 5 * cnt + 7;
             panel.Controls.Add(tb_def);
 
             ComboBox comboBox = new ComboBox();
             comboBox.FormattingEnabled = true;
             comboBox.Items.AddRange(new[] {"无","先攻","魔攻","坚固"});
-            comboBox.Location = new System.Drawing.Point(214, 7);
+            comboBox.Location = new System.Drawing.Point(251, 8);
             comboBox.Name = "monster_special";
-            comboBox.Size = new System.Drawing.Size(51, 18);
+            comboBox.Size = new System.Drawing.Size(50, 20);
             comboBox.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBox.SelectedIndex = 0;
-            comboBox.TabIndex = 4 * cnt + 7;
+            comboBox.TabIndex = 5 * cnt + 8;
+            comboBox.SelectedIndexChanged += calculate;
             panel.Controls.Add(comboBox);
 
             TextBox tb_damage = new TextBox();
-            tb_damage.Location = new System.Drawing.Point(280, 8);
-            tb_damage.Size = new System.Drawing.Size(63, 20);
+            tb_damage.Location = new System.Drawing.Point(313, 8);
+            tb_damage.Size = new System.Drawing.Size(68, 20);
             tb_damage.ReadOnly = true;
             tb_damage.Name = "monster_damage";
             panel.Controls.Add(tb_damage);
 
             TextBox tb_critical = new TextBox();
-            tb_critical.Location = new System.Drawing.Point(362, 8);
-            tb_critical.Size = new System.Drawing.Size(260, 20);
+            tb_critical.Location = new System.Drawing.Point(390, 8);
+            tb_critical.Size = new System.Drawing.Size(240, 20);
             tb_critical.ReadOnly = true;
             tb_critical.Name = "monster_critical";
             panel.Controls.Add(tb_critical);
 
+            Button btn = new Button();
+            btn.Text = "删除";
+            btn.Location = new System.Drawing.Point(645, 8);
+            btn.Size = new System.Drawing.Size(47, 20);
+            panel.Controls.Add(btn);
+            btn.Click += remove;
+
             panel_all.Controls.Add(panel);
+
+            tb_name.Focus();
 
         }
 
@@ -164,7 +214,7 @@ namespace calculator
             Pen pen=new Pen(Color.Black);
             pen.DashStyle = DashStyle.Solid;
             Graphics graphics = CreateGraphics();
-            graphics.DrawLine(pen, 10, 50,((Control)sender).Width-28, 50);
+            graphics.DrawLine(pen, 10, 50,((Control)sender).Width-32, 50);
             pen.Dispose();
             graphics.Dispose();
         }
@@ -189,7 +239,8 @@ namespace calculator
                 text += cnt + "\n";
                 foreach (Control control in panel_all.Controls)
                 {
-                    text += control.Controls.Find("monster_hp", true)[0].Text + " " +
+                    text += control.Controls.Find("monster_name", true)[0].Text + " " +
+                            control.Controls.Find("monster_hp", true)[0].Text + " " +
                             control.Controls.Find("monster_atk", true)[0].Text + " " +
                             control.Controls.Find("monster_def", true)[0].Text + " " +
                             ((ComboBox) control.Controls.Find("monster_special", true)[0]).SelectedIndex + "\n";
@@ -204,7 +255,6 @@ namespace calculator
         {
             OpenFileDialog dialog=new OpenFileDialog();
             dialog.Filter = "怪物属性数据(*.moninfo)|*.moninfo";
-            dialog.FileName = "save";
             dialog.RestoreDirectory = true;
             dialog.Filter = "怪物属性数据(*.moninfo)|*.moninfo";
             dialog.AddExtension = true;
@@ -216,14 +266,16 @@ namespace calculator
                 textbox_hero_def.Text = text[1];
                 int cnt = Convert.ToInt32(text[2]);
                 while (panel_all.Controls.Count<cnt) button_add_item_Click();
+                while (panel_all.Controls.Count > cnt) remove(panel_all.Controls.Count - 1);
                 for (int i = 0; i < cnt; i++)
                 {
                     string[] strings = text[3 + i].Split(" ".ToCharArray());
                     Control control = panel_all.Controls[i];
-                    control.Controls.Find("monster_hp", true)[0].Text = strings[0];
-                    control.Controls.Find("monster_atk", true)[0].Text = strings[1];
-                    control.Controls.Find("monster_def", true)[0].Text = strings[2];
-                    ((ComboBox)control.Controls.Find("monster_special", true)[0]).SelectedIndex = Convert.ToInt32(strings[3]);
+                    control.Controls.Find("monster_name", true)[0].Text = strings[0];
+                    control.Controls.Find("monster_hp", true)[0].Text = strings[1];
+                    control.Controls.Find("monster_atk", true)[0].Text = strings[2];
+                    control.Controls.Find("monster_def", true)[0].Text = strings[3];
+                    ((ComboBox)control.Controls.Find("monster_special", true)[0]).SelectedIndex = Convert.ToInt32(strings[4]);
                 }
                 calculate();
             }
