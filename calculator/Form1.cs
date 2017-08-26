@@ -234,7 +234,7 @@ namespace calculator
             dialog.DefaultExt = ".moninfo";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                string text = textbox_hero_atk.Text + "\n" + textbox_hero_def.Text+"\n";
+                string text = textbox_hero_atk.Text + " " + textbox_hero_def.Text+"\n";
                 int cnt = panel_all.Controls.Count;
                 text += cnt + "\n";
                 foreach (Control control in panel_all.Controls)
@@ -262,14 +262,15 @@ namespace calculator
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 string[] text = File.ReadAllLines(dialog.FileName);
-                textbox_hero_atk.Text = text[0];
-                textbox_hero_def.Text = text[1];
-                int cnt = Convert.ToInt32(text[2]);
+                string[] atkdef = text[0].Split(" ".ToCharArray());
+                textbox_hero_atk.Text = atkdef[0];
+                textbox_hero_def.Text = atkdef[1];
+                int cnt = Convert.ToInt32(text[1]);
                 while (panel_all.Controls.Count<cnt) button_add_item_Click();
                 while (panel_all.Controls.Count > cnt) remove(panel_all.Controls.Count - 1);
                 for (int i = 0; i < cnt; i++)
                 {
-                    string[] strings = text[3 + i].Split(" ".ToCharArray());
+                    string[] strings = text[2 + i].Split(" ".ToCharArray());
                     Control control = panel_all.Controls[i];
                     control.Controls.Find("monster_name", true)[0].Text = strings[0];
                     control.Controls.Find("monster_hp", true)[0].Text = strings[1];
