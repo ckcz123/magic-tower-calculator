@@ -51,6 +51,8 @@ namespace calculator
         public Form1()
         {
             InitializeComponent();
+            lastDirectory = "";
+            lastFilename = "";
         }
 
         private void calculate(object sender=null, EventArgs e=null)
@@ -227,8 +229,18 @@ namespace calculator
         private void button_save_Click(object sender, EventArgs e)
         {
             SaveFileDialog dialog=new SaveFileDialog();
-            dialog.FileName = "save";
-            dialog.RestoreDirectory = true;
+            // dialog.FileName = "save";
+            // dialog.RestoreDirectory = true;
+            if (string.IsNullOrEmpty(lastDirectory) || string.IsNullOrEmpty(lastFilename))
+            {
+                dialog.FileName = "save";
+                dialog.InitialDirectory = Directory.GetCurrentDirectory();
+            }
+            else
+            {
+                dialog.FileName = lastFilename;
+                dialog.InitialDirectory = lastDirectory;
+            }
             dialog.Filter = "怪物属性数据(*.moninfo)|*.moninfo";
             dialog.AddExtension = true;
             dialog.DefaultExt = ".moninfo";
@@ -246,6 +258,8 @@ namespace calculator
                             ((ComboBox) control.Controls.Find("monster_special", true)[0]).SelectedIndex + "\n";
                 }
                 File.WriteAllText(dialog.FileName, text);
+                lastDirectory = Path.GetDirectoryName(dialog.FileName);
+                lastFilename = Path.GetFileName(dialog.FileName);
 
                 MessageBox.Show("文件保存至 "+dialog.FileName+"。", "保存成功！");
             }
@@ -255,8 +269,16 @@ namespace calculator
         {
             OpenFileDialog dialog=new OpenFileDialog();
             dialog.Filter = "怪物属性数据(*.moninfo)|*.moninfo";
-            dialog.RestoreDirectory = true;
-            dialog.Filter = "怪物属性数据(*.moninfo)|*.moninfo";
+            // dialog.RestoreDirectory = true;
+            if (string.IsNullOrEmpty(lastDirectory) || string.IsNullOrEmpty(lastFilename))
+            {
+                dialog.InitialDirectory = Directory.GetCurrentDirectory();
+            }
+            else
+            {
+                dialog.InitialDirectory = lastDirectory;
+                dialog.FileName = lastFilename;
+            }
             dialog.AddExtension = true;
             dialog.DefaultExt = ".moninfo";
             if (dialog.ShowDialog() == DialogResult.OK)
@@ -279,6 +301,10 @@ namespace calculator
                     ((ComboBox)control.Controls.Find("monster_special", true)[0]).SelectedIndex = Convert.ToInt32(strings[4]);
                 }
                 calculate();
+
+                lastDirectory = Path.GetDirectoryName(dialog.FileName);
+                lastFilename = Path.GetFileName(dialog.FileName);
+
             }
         }
 
