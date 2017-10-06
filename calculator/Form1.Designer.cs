@@ -268,7 +268,7 @@ namespace calculator
             this.Controls.Add(this.label2);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "伤害和临界值计算器 By Sky_天空的梦";
+            this.Text = "伤害和临界值计算器 By 艾之葵";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form1_Paint);
             this.ResumeLayout(false);
@@ -298,6 +298,9 @@ namespace calculator
         private TextBox textbox_hero_mdef;
         private Label label12;
         private Label label13;
+
+        private String lastDirectory, lastFilename;
+
     }
 }
 
