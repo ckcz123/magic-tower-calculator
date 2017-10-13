@@ -37,8 +37,10 @@ namespace calculator
                 int damage = special == 1 ? per_damage : 0;
                 // 破甲
                 if (special == 6) damage = (int)(0.9 * hero_def);
+                // 反击
+                if (special == 7) per_damage += (int)(0.1 * hero_atk);
                 // 净化
-                if (special == 7) damage = 3 * hero_mdef;
+                if (special == 8) damage = 3 * hero_mdef;
                 int ans = damage + (hp - 1) / (hero_atk - def) * per_damage;
                 return Math.Max(ans - hero_mdef, 0);
             }
@@ -212,7 +214,7 @@ namespace calculator
 
             ComboBox comboBox = new ComboBox();
             comboBox.FormattingEnabled = true;
-            comboBox.Items.AddRange(new[] {"无","先攻","魔攻","坚固", "2连击", "3连击", "破甲", "净化"});
+            comboBox.Items.AddRange(new[] {"无","先攻","魔攻","坚固", "2连击", "3连击", "破甲", "反击", "净化"});
             comboBox.Location = new System.Drawing.Point(251, 8);
             comboBox.Name = "monster_special";
             comboBox.Size = new System.Drawing.Size(50, 20);
