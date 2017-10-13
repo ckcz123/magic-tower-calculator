@@ -22,31 +22,52 @@ namespace calculator
             {
                 hp = _hp; atk = _atk; def = _def; special = _special;
             }
+            public int getSpecial()
+            {
+                return special;
+            }
             public int getDamage(int hero_atk, int hero_def, int hero_mdef)
             {
                 // 魔攻
                 if (special == 2) hero_def = 0;
                 // 坚固
                 if (special == 3 && def < hero_atk - 1) def = hero_atk - 1;
+                // 模仿
+                if (special == 10)
+                {
+                    atk = hero_atk; def = hero_def;
+                }
                 if (hero_atk <= def) return 999999999;
-                int per_damage = Math.Max(atk - hero_def, 0);
+
+                int per_damage = atk - hero_def;
+                if (per_damage < 0) per_damage = 0;
                 // 2连击 & 3连击
+
                 if (special == 4) per_damage *= 2;
                 if (special == 5) per_damage *= 3;
+                if (special == 6) per_damage *= 4;
+                // 反击
+                if (special == 8) per_damage += (int)(0.1 * hero_atk);
+
                 // 先攻
                 int damage = special == 1 ? per_damage : 0;
                 // 破甲
-                if (special == 6) damage = (int)(0.9 * hero_def);
-                // 反击
-                if (special == 7) per_damage += (int)(0.1 * hero_atk);
+                if (special == 7) damage = (int)(0.9 * hero_def);
                 // 净化
-                if (special == 8) damage = 3 * hero_mdef;
+                if (special == 9) damage = 3 * hero_mdef;
+
                 int ans = damage + (hp - 1) / (hero_atk - def) * per_damage;
-                return Math.Max(ans - hero_mdef, 0);
+                ans -= hero_mdef;
+
+                // 魔防回血
+                // return ans;
+
+                // 魔防不回血
+                return ans <= 0 ? 0 : ans;
             }
             public string getCritical(int hero_atk, int hero_def, int hero_mdef)
             {
-                if (special == 3 || hero_atk <= 0) return "无临界";
+                if (special == 3 || special==10 || hero_atk <= 0) return "无临界";
                 int last = getDamage(hero_atk - 1, hero_def, hero_mdef);
                 List<int> list = new List<int>();
                 for (int i = hero_atk; i <= hp+def; i++)
@@ -60,7 +81,7 @@ namespace calculator
             }
             public string getCriticalDamage(int hero_atk, int hero_def, int hero_mdef)
             {
-                if (special == 3 || hero_atk <= 0) return "";
+                if (special == 3 || special==10 || hero_atk <= 0) return "";
                 int now = getDamage(hero_atk, hero_def, hero_mdef);
                 if (now == 999999999) return "";
                 int last = now;
@@ -125,6 +146,7 @@ namespace calculator
                     Convert.ToInt32(control.Controls.Find("monster_def", true)[0].Text),
                     ((ComboBox)control.Controls.Find("monster_special", true)[0]).SelectedIndex
                 );
+
                 int damage = monster.getDamage(hero_atk, hero_def, hero_mdef);
                 control.Controls.Find("monster_damage", true)[0].Text = damage==999999999?"不可战斗":Convert.ToString(damage);
                 control.Controls.Find("monster_critical", true)[0].Text = monster.getCritical(hero_atk, hero_def, hero_mdef);
@@ -214,7 +236,7 @@ namespace calculator
 
             ComboBox comboBox = new ComboBox();
             comboBox.FormattingEnabled = true;
-            comboBox.Items.AddRange(new[] {"无","先攻","魔攻","坚固", "2连击", "3连击", "破甲", "反击", "净化"});
+            comboBox.Items.AddRange(new[] {"无","先攻","魔攻","坚固", "2连击", "3连击", "4连击", "破甲", "反击", "净化", "模仿"});
             comboBox.Location = new System.Drawing.Point(251, 8);
             comboBox.Name = "monster_special";
             comboBox.Size = new System.Drawing.Size(50, 20);
